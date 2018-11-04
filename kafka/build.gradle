@@ -1,0 +1,118 @@
+plugins {
+    id 'java'
+}
+
+group 'org.apache.kafka'
+version '1.0-SNAPSHOT'
+
+apply from: "$rootDir/gradle/dependencies.gradle"
+
+ext {
+    gradleVersion = "4.10.2"
+}
+
+apply from: file('wrapper.gradle')
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile libs.slf4jApi
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+allprojects {
+
+    repositories {
+        mavenCentral()
+    }
+    
+}
+
+subprojects {
+    apply plugin: 'java' //so that I can declare 'compile' dependencies
+    apply plugin: 'maven'
+}
+
+project(':clients') {
+    archivesBaseName = "kafka-clients"
+
+    configurations {
+        jacksonDatabindConfig
+    }
+
+    // add jacksonDatabindConfig as provided scope config with high priority (1000)
+    conf2ScopeMappings.addMapping(1000, configurations.jacksonDatabindConfig, "provided")
+
+    dependencies {
+        compile libs.slf4jApi
+        compile libs.lz4
+        compileOnly libs.jacksonDatabind // for SASL/OAUTHBEARER bearer token parsing
+        jacksonDatabindConfig libs.jacksonDatabind // to publish as provided scope dependency.
+    }
+}
+
+project (':tools') {
+    archivesBaseName = "kafka-tools"
+
+    dependencies {
+        compile project(':clients')
+        compile libs.jacksonDatabind
+        compile libs.slf4jApi
+    }
+
+    tasks.create(name: "copyDependantLibs", type: Copy) {
+        from (configurations.testRuntime) {
+            include('slf4j-log4j12*')
+            include('log4j*jar')
+        }
+        from (configurations.runtime) {
+            exclude('kafka-clients*')
+        }
+        into "$buildDir/dependant-libs-${versions.scala}"
+        duplicatesStrategy 'exclude'
+    }
+
+    jar {
+        dependsOn 'copyDependantLibs'
+    }
+
+}
+
+project(':streams') {
+    archivesBaseName = "kafka-streams"
+
+    dependencies {
+        compile project(':clients')
+        compile libs.slf4jApi
+        compile libs.rocksDBJni
+    }
+
+    tasks.create(name: "copyDependantLibs", type: Copy) {
+        from (configurations.testRuntime) {
+            include('slf4j-log4j12*')
+            include('log4j*jar')
+        }
+        from(configurations.runtime) {
+            exclude('kafka-clients*')
+        }
+        into "$buildDir/dependant-libs-${versions.scala}"
+        duplicatesStrategy 'exclude'
+    }
+
+    jar {
+        dependsOn 'copyDependantLibs'
+    }
+}
+
+project(':streams:examples') {
+    archivesBaseName = "kafka-streams-examples"
+
+    dependencies {
+        compile project(":streams")
+
+    }
+}

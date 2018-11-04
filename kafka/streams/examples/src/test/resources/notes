@@ -1,0 +1,34 @@
+# list the topics
+./bin/kafka-topics --list --zookeeper localhost:2181
+
+·# list mensages from input queue
+./bin/kafka-console-consumer --bootstrap-server localhost:9092 --topic streams-plaintext-input --from-beginning
+
+# We send this input data to the input topic:
+echo -e "all streams lead to kafka\nhello kafka streams\njoin kafka summit" > /tmp/file-input.txt
+cat /tmp/file-input.txt | ./bin/kafka-console-producer --broker-list localhost:9092 --topic streams-plaintext-input
+
+# Read messages from output queue
+
+./bin/kafka-console-consumer --bootstrap-server localhost:9092 --topic streams-wordcount-output --from-beginning         --from-beginning         --formatter kafka.tools.DefaultMessageFormatter         --property print.key=true         --property key.deserializer=org.apache.kafka.common.serialization.StringDeserializer         --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
+
+# The exit in the console
+
+all	1
+streams	1
+lead	1
+to	1
+kafka	1
+hello	1
+kafka	2
+streams	2
+join	1
+kafka	3
+summit	1
+
+
+# original input file
+
+all streams lead to kafka
+hello kafka streams
+join kafka summit

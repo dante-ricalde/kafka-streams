@@ -1,0 +1,33 @@
+ext {
+    versions = [:]
+    libs = [:]
+}
+
+// Add Scala version
+def defaultScala211Version = '2.11.12'
+def defalutScala212Version = '2.12.7'
+if (hasProperty('scalaVersion')) {
+    if (scalaVersion == '2.11') {
+        versions["scala"] = defaultScala211Version
+    } else if (scalaVersion == '2.12') {
+        versions["scala"] = defalutScala212Version
+    } else {
+        versions["scala"] = scalaVersion
+    }
+} else {
+    versions["scala"] = defaultScala211Version
+}
+
+versions += [
+    jackson: "2.9.7",
+    lz4: "1.5.0",
+    rocksDB: "5.15.10",
+    slf4j: "1.7.25"
+]
+
+libs += [
+    jacksonDatabind: "com.fasterxml.jackson.core:jackson-databind:$versions.jackson",
+    lz4: "org.lz4:lz4-java:$versions.lz4",
+    rocksDBJni: "org.rocksdb:rocksdbjni:$versions.rocksDB",
+    slf4jApi: "org.slf4j:slf4j-api:$versions.slf4j",
+]
