@@ -34,6 +34,8 @@ public class KafkaMusicExample {
         "[<hostnameForRestEndPoint> (optional, default: " + DEFAULT_REST_ENDPOINT_HOSTNAME + ")]");
     }
 
+    // We are going to start
+
 
 
   }

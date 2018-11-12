@@ -27,6 +27,14 @@
     </pluginRepository>
   </pluginRepositories>
 
+  <!-- Other properties such as kafka.version are derived from parent project(s) such as
+       https://github.com/confluentinc/common (see common's pom.xml for kafka.version).
+  -->
+  <properties>
+    <docker.skip-build>false</docker.skip-build>
+    <docker.skip-test>false</docker.skip-test>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.confluent</groupId>
@@ -93,5 +101,39 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>docker</id>
+      <activation>
+        <property>
+          <name>env.BUILD_NUMBER</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.spotify</groupId>
+            <artifactId>dockerfile-maven-plugin</artifactId>
+            <version>${dockerfile-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>package</id>
+                <goals>
+                  <goal>build</goal>
+                </goals>
+                <configuration combine.self="append">
+                  <skip>${docker.skip-build}</skip>
+                  <buildArgs>
+                    <STREAMS_VERSION>${project.version}</STREAMS_VERSION>
+                  </buildArgs>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
